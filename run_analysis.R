@@ -8,10 +8,8 @@
 # 5. From the data set in step 4, creates a second, independent tidy data set 
 #    with the average of each variable for each activity and each subject.
 
+#Moved files to script directory
 
-
-#set working Directory
-setwd("c:/classes/GetData/project/")
 #read the Test Data
 x_test <- read.table("test/X_test.txt")
 y_test <- read.table("test/y_test.txt")
