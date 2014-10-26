@@ -22,7 +22,7 @@ x_train <- read.table("train/X_train.txt")
 y_train <- read.table("train/y_train.txt")
 subject_train <- read.table("train/subject_train.txt")
 
-#read the features (Activity Names)
+#read the features (Measurement Names)
 features <- read.table("features.txt")
 
 #read the activity names
@@ -52,8 +52,9 @@ names(merged) <- features[,2]  #renames the columns in the Merged Set
 # Remove brackets
 # remove dashes
 
-names(merged) <- gsub('-mean', 'Average', names(merged))  #
-names(merged) <- gsub('-std', 'StdDev', names(merged))
+names(merged) <- gsub('-mean', 'Average', names(merged), ignore.case = TRUE)
+names(merged) <- gsub('Mean', 'Average', names(merged), ignore.case = TRUE)#
+names(merged) <- gsub('-std', 'StdDev', names(merged), ignore.case = TRUE)
 names(merged) <- gsub('[-()]', '', names(merged))
 names(merged) <- gsub("-", "", names(merged))
 
@@ -68,14 +69,14 @@ colStdMeans <- grep("(Average|StdDev)", names(merged))
 #subset the columns into merged_STD_Means
 merged_STD_Means <- merged[ ,colStdMeans]
 
-#We should now have 10299 obs and 79 columns (variables)
+#We should now have 10299 obs and 86 columns (variables)
 dim(merged_STD_Means)
 
 #Tidy_data step
 #combine the Subject, activity
 tidy <- cbind(subjects, activities, merged_STD_Means)
 
-#we should now have 10299 obs with 81 columns
+#we should now have 10299 obs with 88 columns
 
 #Rename the columan acitivites to Activity
 names(tidy) <- gsub('activities', 'Activity', names(tidy))
@@ -89,8 +90,18 @@ names(tidy) <- gsub('activities', 'Activity', names(tidy))
 library(dplyr)
 #convert tidy to a  data frame tbl
 tidy_df <- tbl_df(tidy)
-
+#Free up memory
+rm(tidy)
 # we will want to group by subject & activity
+# According to David (https://class.coursera.org/getdata-008/forum/thread?thread_id=24)
+# We are looking for the subject/activity group
 group_by_subject_activity <- group_by(tidy_df, Subject, Activity)
 
-summarise_each(tidy_df, funs(mean))
+#For Each Variable obtain the mean
+tidy_avg <- summarise_each(group_by_subject_activity, funs(mean))
+
+#Write the data to disk
+write.table(tidy_avg, "tidy.txt", row.names = FALSE)
+
+#load the data from file
+check <- read.table("tidy.txt", header = TRUE)
